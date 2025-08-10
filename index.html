@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Osun State Weather Forecast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url('https://images.unsplash.com/photo-1502657877623-f66bf489d236?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
+                        url('https://images.unsplash.com/photo-1444259705809-cfed33639efa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-color: rgba(34, 139, 34, 0.4);
+      background-blend-mode: overlay, overlay;
+      color: #333;
+      min-height: 100vh;
+      padding: 10px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      padding: 30px 20px;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      margin: 0;
+      font-size: 2.6em;
+      color: white;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+      font-weight: 700;
+    }
+    .user-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 16px;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+    .user-panel button {
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .user-panel button:hover {
+      background-color: #3367D6;
+    }
+    .alert-banner {
+      background-color: #e74c3c;
+      color: white;
+      padding: 12px;
+      margin: 20px 0;
+      border-radius: 10px;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: none;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    .location-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 30px;
+      padding: 0 10px;
+    }
+    .location-button {
+      padding: 14px 20px;
+      background-color: rgba(9, 132, 227, 0.95);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      min-width: 110px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    .location-button:hover {
+      background-color: #0773c7;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+    .loading, .error {
+      text-align: center;
+      font-size: 1.3em;
+      color: rgba(255, 255, 255, 0.95);
+      margin: 30px 0;
+      padding: 25px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .current-weather {
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.94);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .current-weather h2 {
+      margin: 0 0 15px;
+      color: #0984e3;
+      font-size: 2.1em;
+    }
+    .current-weather p {
+      margin: 10px 0;
+      font-size: 1.4em;
+      font-weight: 600;
+    }
+    .current-weather #current-condition {
+      font-size: 1.2em;
+      color: #2d3436;
+      font-weight: 500;
+    }
+    .forecast-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      padding: 10px;
+    }
+    .forecast-card {
+      width: calc(20% - 25px);
+      min-width: 170px;
+      background-color: rgba(255, 255, 255, 0.96);
+      border-radius: 15px;
+      padding: 20px 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      text-align: center;
+      transition: all 0.4s ease;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .forecast-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.18);
+    }
+    .forecast-card h3 {
+      margin: 0 0 14px;
+      font-size: 1.25em;
+      color: #2d3436;
+      font-weight: 700;
+    }
+    .forecast-card img {
+      width: 65px;
+      height: 65px;
+      margin: 10px auto;
+    }
+    .forecast-card p {
+      margin: 6px 0;
+      font-size: 1.05em;
+      color: #666;
+    }
+    .advice {
+      font-size: 13px;
+      color: #27ae60;
+      margin-top: 10px;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 1024px) {
+      .forecast-card { width: calc(25% - 20px); }
+      h1 { font-size: 2.3em; }
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2.1em; }
+      .location-button { padding: 12px 16px; font-size: 14px; }
+      .forecast-card { width: calc(33.33% - 18px); }
+    }
+    @media (max-width: 576px) {
+      h1 { font-size: 1.9em; }
+      .user-panel { flex-direction: column; gap: 10px; }
+      .location-button { padding: 10px 14px; font-size: 13px; min-width: 90px; }
+      .forecast-card { width: calc(50% - 15px); }
+      .current-weather p { font-size: 1.25em; }
+    }
+    @media (max-width: 380px) {
+      .forecast-card { width: 100%; }
+      .loading { font-size: 1.1em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌦️ Osun State Weather Forecast</h1>
+      <div class="user-panel">
+        <span id="user-greeting">Signed in as guest@osun.gov.ng</span>
+        <button id="login-btn" onclick="toggleSignIn()">Sign in with Google</button>
+      </div>
+    </header>
+
+    <!-- Real-Time Alert Banner (only shown to signed-in users) -->
+    <div id="alert-banner" class="alert-banner" style="display: none;"></div>
+
+    <!-- Location Buttons -->
+    <div class="location-buttons">
+      <button class="location-button" onclick="fetchWeather('Osogbo, NG')">Osogbo</button>
+      <button class="location-button" onclick="fetchWeather('Ilesa, NG')">Ilesa</button>
+      <button class="location-button" onclick="fetchWeather('Ede, NG')">Ede</button>
+      <button class="location-button" onclick="fetchWeather('Iwo, NG')">Iwo</button>
+      <button class="location-button" onclick="fetchWeather('Ikire, NG')">Ikire</button>
+      <button class="location-button" onclick="fetchWeather('Ejigbo, NG')">Ejigbo</button>
+      <button class="location-button" onclick="fetchWeather('Ipetumodu, NG')">Ipetumodu</button>
+      <button class="location-button" onclick="fetchWeather('Ifon, NG')">Ifon Osun</button>
+      <button class="location-button" onclick="fetchWeather('Ikirun, NG')">Ikirun</button>
+      <button class="location-button" onclick="fetchWeather('Ila Orangun, NG')">Ila Orangun</button>
+      <button class="location-button" onclick="fetchWeather('Modakeke, NG')">Modakeke</button>
+      <button class="location-button" onclick="fetchWeather('Oke-Ila, NG')">Oke-Ila</button>
+      <button class="location-button" onclick="fetchWeather('Otan Ayegbaju, NG')">Otan Ayegbaju</button>
+      <button class="location-button" onclick="fetchWeather('Obokun, NG')">Obokun</button>
+      <button class="location-button" onclick="fetchWeather('Olorunda, NG')">Olorunda</button>
+      <button class="location-button" onclick="fetchWeather('Boripe, NG')">Boripe</button>
+      <button class="location-button" onclick="fetchWeather('Oriade, NG')">Oriade</button>
+      <button class="location-button" onclick="fetchWeather('Aiyedade, NG')">Aiyedade</button>
+      <button class="location-button" onclick="fetchWeather('Aiyedire, NG')">Aiyedire</button>
+      <button class="location-button" onclick="fetchWeather('Atakunmosa East, NG')">Atakunmosa East</button>
+      <button class="location-button" onclick="fetchWeather('Atakunmosa West, NG')">Atakunmosa West</button>
+      <button class="location-button" onclick="fetchWeather('Ife Central, NG')">Ife Central</button>
+      <button class="location-button" onclick="fetchWeather('Ife East, NG')">Ife East</button>
+      <button class="location-button" onclick="fetchWeather('Ife North, NG')">Ife North</button>
+      <button class="location-button" onclick="fetchWeather('Ife South, NG')">Ife South</button>
+      <button class="location-button" onclick="fetchWeather('Ifedayo, NG')">Ifedayo</button>
+      <button class="location-button" onclick="fetchWeather('Isokan, NG')">Isokan</button>
+      <button class="location-button" onclick="fetchWeather('Irewole, NG')">Irewole</button>
+      <button class="location-button" onclick="fetchWeather('Irepodun, NG')">Irepodun</button>
+      <button class="location-button" onclick="fetchWeather('Ifelodun, NG')">Ifelodun</button>
+    </div>
+
+    <!-- Current Weather -->
+    <div id="current-weather" class="current-weather" style="display: none;">
+      <h2 id="current-location"></h2>
+      <p id="current-temp"></p>
+      <p id="current-condition"></p>
+    </div>
+
+    <!-- Forecast -->
+    <div id="forecast-container" class="forecast-container"></div>
+
+    <!-- Loading / Error -->
+    <div id="loading" class="loading">🔍 Select a location to view forecast</div>
+    <div id="error" class="error" style="display: none;"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJWrAfH5mfK2t-ThXDNRAwZOCtNeEK21c",
+      authDomain: "osunweatherapp.firebaseapp.com",
+      projectId: "osunweatherapp",
+      storageBucket: "osunweatherapp.firebasestorage.app",
+      messagingSenderId: "906426010667",
+      appId: "1:906426010667:web:ef86f9fc95590876306e6e"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // OpenWeatherMap API Key
+    const API_KEY = 'b13f8883dbd05a97429a758a544c429b';
+
+    // Track user login state
+    auth.onAuthStateChanged((user) => {
+      const loginBtn = document.getElementById('login-btn');
+      const userGreeting = document.getElementById('user-greeting');
+      if (user) {
+        userGreeting.textContent = `Signed in as ${user.email}`;
+        loginBtn.textContent = 'Sign out';
+      } else {
+        userGreeting.textContent = 'Signed in to receive weather alerts';
+        loginBtn.textContent = 'Sign in with Google';
+      }
+    });
+
+    // Toggle Sign In/Out
+    function toggleSignIn() {
+      const user = auth.currentUser;
+      if (user) {
+        auth.signOut();
+      } else {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch((error) => {
+          showAlert(`Login failed: ${error.message}`, 'info');
+        });
+      }
+    }
+
+    // Show alert only if user is signed in
+    function showAlert(message, type = 'warning') {
+      const alertEl = document.getElementById('alert-banner');
+      const user = auth.currentUser;
+      if (!user) return; // Only show alerts to signed-in users
+
+      alertEl.textContent = `🔔 ${message}`;
+      alertEl.style.display = 'block';
+      alertEl.style.backgroundColor = type === 'error' ? '#e74c3c' : '#3498db';
+      setTimeout(() => { alertEl.style.display = 'none'; }, 6000);
+    }
+
+    // Fetch Weather — Available to everyone
+    async function fetchWeather(city) {
+      hideAll();
+      document.getElementById('loading').style.display = 'block';
+
+      try {
+        const currentRes = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+        );
+        if (!currentRes.ok) throw new Error("City not found");
+
+        const current = await currentRes.json();
+
+        document.getElementById('current-location').textContent = `📍 ${current.name}, Osun State`;
+        document.getElementById('current-temp').textContent = `${Math.round(current.main.temp)}°C`;
+        document.getElementById('current-condition').textContent = 
+          `${current.weather[0].description.charAt(0).toUpperCase() + current.weather[0].description.slice(1)}`;
+        document.getElementById('current-weather').style.display = 'block';
+
+        // Show alert only if user is signed in
+        const condition = current.weather[0].main;
+        const temp = current.main.temp;
+        const user = auth.currentUser;
+
+        if (user) {
+          if (condition === 'Rain' || condition === 'Thunderstorm') {
+            showAlert(`${condition} in ${current.name}! Avoid outdoor work.`, 'warning');
+          } else if (temp > 35) {
+            showAlert(`Heat alert: ${temp}°C in ${current.name}! Stay hydrated.`, 'warning');
+          } else if (condition === 'Clear') {
+            showAlert(`Sunny day in ${current.name}! Ideal for farming.`, 'info');
+          }
+        }
+
+        // Fetch forecast
+        const forecastRes = await fetch(
+          `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`
+        );
+        if (!forecastRes.ok) throw new Error("Forecast unavailable");
+
+        const forecast = await forecastRes.json();
+        renderForecast(forecast.list);
+
+        hideAll();
+      } catch (err) {
+        document.getElementById('error').textContent = `❌ ${err.message}`;
+        document.getElementById('error').style.display = 'block';
+      }
+    }
+
+    function renderForecast(list) {
+      const container = document.getElementById('forecast-container');
+      container.innerHTML = '';
+
+      const daily = {};
+      list.forEach(item => {
+        const date = new Date(item.dt * 1000).toLocaleDateString();
+        if (!daily[date] && Object.keys(daily).length < 5) {
+          daily[date] = item;
+        }
+      });
+
+      Object.values(daily).forEach(day => {
+        const date = new Date(day.dt * 1000).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        const temp = Math.round(day.main.temp);
+        const desc = day.weather[0].description;
+        const icon = day.weather[0].icon;
+        const advice = getAdvice(day.weather[0].main, temp);
+
+        const card = document.createElement('div');
+        card.className = 'forecast-card';
+        card.innerHTML = `
+          <h3>${date}</h3>
+          <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${desc}" />
+          <p>${temp}°C</p>
+          <p>${desc}</p>
+          <p class="advice">${advice}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function getAdvice(condition, temp) {
+      if (temp > 35) return '🔥 Avoid midday farming. Stay hydrated.';
+      if (temp < 20) return '❄️ Protect seedlings from cold.';
+      if (condition === 'Rain') return '🌧️ Delay planting. Risk of flooding.';
+      if (condition === 'Thunderstorm') return '⚡ Stay indoors. Avoid travel.';
+      if (condition === 'Clear') return '☀️ Great day for harvesting!';
+      return '🌾 Monitor conditions for best farming window.';
+    }
+
+    function hideAll() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+    }
+  </script>
+
+  <!-- Professional Footer -->
+<footer style="
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #fff;
+  padding: 40px 20px;
+  margin-top: 50px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+">
+  <div style="
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+    text-align: center;
+  ">
+
+    <!-- App Info -->
+    <div style="flex: 1; min-width: 250px;">
+      <h3 style="
+        font-size: 1.6em;
+        margin-bottom: 12px;
+        color: #00d2ff;
+        font-weight: 600;
+      ">OsunWeather</h3>
+      <p style="color: #ccc; line-height: 1.6; font-size: 0.95em;">
+        Reliable, real-time weather forecasting for all 30 LGAs in Osun State.<br>
+        Empowering farmers, travelers, and communities with smart weather insights.
+      </p>
+    </div>
+
+    <!-- Developer Info -->
+    <div style="flex: 1; min-width: 250px;">
+      <h4 style="
+        font-size: 1.3em;
+        margin-bottom: 12px;
+        color: #00d2ff;
+      ">Developed By</h4>
+      <p style="color: #fff; font-weight: 500; font-size: 1.1em;">
+        WebTech24hr
+      </p>
+      <p style="color: #ccc; font-size: 0.95em; margin-top: 8px;">
+        Full-Stack Web Developer & Climate Tech Engineer<br>
+        Specializing in weather data integration and civic tech solutions
+      </p>
+      <div style="margin-top: 12px;">
+        <a href="mailto:john.adeola.dev@gmail.com" style="
+          color: #00d2ff;
+          text-decoration: none;
+          font-size: 0.95em;
+        ">📧 webtech24hr@gmail.com</a>
+      </div>
+    </div>
+
+    <!-- Powered By & Credits -->
+    <div style="flex: 1; min-width: 250px;">
+      <h4 style="
+        font-size: 1.3em;
+        margin-bottom: 12px;
+        color: #00d2ff;
+      ">Powered By</h4>
+      <div style="display: flex; justify-content: center; gap: 15px; margin-top: 10px;">
+        <a href="https://openweathermap.org" target="_blank" style="display: block;">
+          <img src="https://openweathermap.org/themes/openweathermap/assets/img/logo_white.svg" 
+               alt="OpenWeatherMap" 
+               style="height: 28px; filter: brightness(1.2);">
+        </a>
+        <a href="https://firebase.google.com" target="_blank" style="display: block;">
+          <img src="https://firebase.google.com/downloads/brand-guidelines/SVG/logo-firebase.svg" 
+               alt="Firebase" 
+               style="height: 28px; margin-top: 2px;">
+        </a>
+      </div>
+      <p style="color: #ccc; font-size: 0.9em; margin-top: 15px;">
+        Data sourced from OpenWeather One Call API 3.0<br>
+        Auth & Hosting powered by Google Firebase
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Bottom Bar -->
+  <div style="
+    text-align: center;
+    padding-top: 20px;
+    margin-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    font-size: 0.9em;
+    font-weight: 500;
+  ">
+    &copy; <span id="year">2025</span> OsunWeather App | A Civic Tech Initiative for Sustainable Agriculture & Public Safety
+  </div>
+</footer>
+
+<!-- Script to auto-update year -->
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
